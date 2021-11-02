@@ -1,16 +1,21 @@
 import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Grid } from 'semantic-ui-react';
+import LoadingComponent from '../../../app/layout/LoadingComponents';
 import { useStore } from '../../../app/stores/store';
-import ActivityDetails from '../details/ActivityDetails';
-import ActivityForm from '../form/ActivityForm';
 import ActivityList from './ActivityList';
 
 export default observer(function ActivityDashboard() {
+  const { activityStore } = useStore(); // destructuring the object store to get only activityStore
+  const { loadActivities, activityRegistry } = activityStore;
 
-  const { activityStore } = useStore();
+  useEffect(() => {
+    if (activityRegistry.size <= 1) activityStore.loadActivities();
+  }, [activityRegistry.size, loadActivities]) // [] in the end's gonna assure that our hook runs only once
+  // activityStore is a dependency to the use effect
 
-  const { selectedActivity, editMode } = activityStore;
+
+  if (activityStore.loadingInitial) return <LoadingComponent content='Loading app' />
 
   return (
     <Grid>
@@ -18,12 +23,7 @@ export default observer(function ActivityDashboard() {
         <ActivityList />
       </Grid.Column>
       <Grid.Column width='6'>
-        {selectedActivity && !editMode &&
-          <ActivityDetails />
-        }
-        {editMode &&
-          <ActivityForm />
-        }
+        <h2> Activity filters </h2>
       </Grid.Column>
     </Grid>
   )
